@@ -1,224 +1,89 @@
-<p align="center">
-  <a href="#"><img src="https://img.shields.io/badge/Python-3.10-blue"/></a>
-  <a href="#"><img src="https://img.shields.io/badge/PyTorch-DeepLearning-red"/></a>
-  <a href="#"><img src="https://img.shields.io/badge/License-MIT-green"/></a>
-  <a href="#"><img src="https://img.shields.io/badge/Interface-CLI-orange"/></a>
-  <a href="#"><img src="https://img.shields.io/badge/Status-Active-success"/></a>
-</p>
+# TriTaskNLP
 
-# 🧠 TriTaskNLP
+> Unified Multi-Task Learning framework for Topic Classification, Sentiment Analysis, and Author Identification.
 
-### Unified Multi-Task Learning for Topic, Sentiment, and Author Analysis
-
-<p align="center">
-  <img src="assets/demo.gif" width="800"/>
-</p>
+[Repository](https://github.com/SanyogSingh07/TriTaskNLP)
 
 ---
 
 ## Overview
 
-TriTaskNLP is a multi-task Natural Language Processing system that performs:
+**TriTaskNLP** is a multi-task Natural Language Processing system that joint-trains three distinct text analysis objectives — **Topic Classification**, **Sentiment Analysis**, and **Author Identification** — within a single neural architecture.
 
-* Topic Classification
-* Sentiment Analysis
-* Author Identification
-
-within a single unified architecture.
-
-Rather than training separate models, the system uses **shared representation learning**, allowing a single encoder to extract linguistic features that generalize across tasks. This reduces redundancy and improves both efficiency and performance.
-
----
-
-## Why This Project Exists
-
-Most NLP systems treat tasks in isolation. In practice, however:
-
-* sentiment depends on topic context
-* writing style influences both tone and structure
-* semantic features overlap across tasks
-
-TriTaskNLP explores how a **shared latent space** can capture these relationships more effectively than independent pipelines.
+Rather than training isolated task models, TriTaskNLP utilizes a **shared embedding & encoder representation**, allowing a single backbone to extract semantic and stylistic features that generalize across objectives while maintaining task-specific classification heads.
 
 ---
 
 ## Architecture
 
-<p align="center">
-  <img src="assets/architecture.png" width="700"/>
-</p>
-
-```
-Input Text → Preprocessing → Embedding Layer → Shared Encoder
-                ↓
-        Shared Representation
-                ↓
-     ┌────────────┬────────────┬────────────┐
-     │ Topic      │ Sentiment  │ Author     │
-     └────────────┴────────────┴────────────┘
-```
-
-### Key Design Decisions
-
-* **Shared Encoder (BiLSTM / Transformer)**
-  Learns contextual, semantic, and stylistic features once
-
-* **Task-Specific Heads**
-  Independent classifiers for each objective
-
-* **Weighted Multi-Loss Optimization**
-  Balances contribution of each task
-
----
-
-## Demo
-
-<p align="center">
-  <img src="assets/demo.gif" width="800"/>
-</p>
-
----
-
-## Interface
-
-### CLI Dashboard
-
-<p align="center">
-  <img src="assets/cli.png" width="700"/>
-</p>
-
-The system provides:
-
-* interactive menu (number-based)
-* command-based execution
-* animated transitions
-* structured outputs using tables and panels
-
----
-
-## Features
-
-* Multi-task learning with shared representations
-* GPU acceleration (CUDA support)
-* Interactive CLI with Rich UI
-* Live training visualization
-* PCA, t-SNE, and clustering analysis
-* Confusion matrix evaluation
-* Modular and extensible architecture
-
----
-
-## Installation
-
-```bash
-git clone https://github.com/SanyogSingh07/TriTaskNLP.git
-cd TriTaskNLP
-pip install -r requirements.txt
+```mermaid
+graph TD
+    A[Raw Input Text] --> B[Text Preprocessing & Tokenization]
+    B --> C[Embedding Layer]
+    C --> D[Shared Representation Encoder BiLSTM / Transformer]
+    D --> E[Shared Feature Space]
+    E --> F[Topic Head Classifier]
+    E --> G[Sentiment Head Classifier]
+    E --> H[Author ID Head Classifier]
+    F --> I[Topic Label]
+    G --> J[Sentiment Label]
+    H --> K[Author Label]
 ```
 
----
-
-## Usage
-
-### Launch Interactive CLI
-
-```bash
-python main.py
-```
-
-### Or run commands directly
-
-```bash
-python main.py train
-python main.py evaluate
-python main.py predict "This model is impressive"
-python main.py visualize
-```
+### Key Technical Innovations
+- **Shared Representation Learning**: Reduces parameters and memory footprint compared to 3 independent models.
+- **Weighted Multi-Objective Optimization**: Combines task losses ($\mathcal{L}_{total} = lpha \mathcal{L}_{topic} + eta \mathcal{L}_{sent} + \gamma \mathcal{L}_{author}$) with gradient balancing.
+- **Interactive Rich CLI**: Command-line dashboard featuring live prediction, confusion matrix evaluation, and t-SNE / PCA representation plots.
 
 ---
 
-## Evaluation & Results
+## Tech Stack
 
-<p align="center">
-  <img src="assets/confusion_matrix.png" width="500"/>
-</p>
-
-| Task                  | Accuracy Range |
-| --------------------- | -------------- |
-| Topic Classification  | 92–96%         |
-| Sentiment Analysis    | 90–94%         |
-| Author Identification | 85–92%         |
+- **Language**: Python 3.10+
+- **Deep Learning**: PyTorch, torchvision
+- **NLP & Feature Engineering**: NumPy, Scikit-learn, Matplotlib
+- **UI / CLI**: Rich, PyInquirer
 
 ---
 
-## Representation Analysis
+## Evaluation Ranges
 
-<p align="center">
-  <img src="assets/pca_plot.png" width="450"/>
-  <img src="assets/tsne_plot.png" width="450"/>
-</p>
-
-These visualizations demonstrate how the shared embedding space separates different classes and tasks.
+| Task Objective | Typical Accuracy Range |
+|:---|:---|
+| **Topic Classification** | 92% – 96% |
+| **Sentiment Analysis** | 90% – 94% |
+| **Author Identification** | 85% – 92% |
 
 ---
 
 ## Project Structure
 
-```
+```text
 TriTaskNLP/
-│
-├── cli/                # CLI commands
-├── data/               # Data loaders and preprocessing
-├── models/             # Neural architectures
-├── utils/              # Visualization, metrics, dashboard
-│
-├── train.py            # Training pipeline
-├── evaluate.py         # Evaluation logic
-├── main.py             # CLI entry point
+├── main.py                 # Interactive CLI entry point
+├── train.py                # Multi-task training engine
+├── evaluate.py             # Evaluation and metrics suite
+├── cli/                    # Rich CLI interface modules
+├── data/                   # Dataset loaders and preprocessors
+├── models/                 # PyTorch neural architectures
+└── utils/                  # Visualization (t-SNE/PCA) and logging
 ```
 
 ---
 
-## Trade-offs
+## Setup & Execution
 
-### Advantages
-
-* Shared learning improves generalization
-* Reduced computational redundancy
-* Unified architecture
-
-### Limitations
-
-* Task interference (negative transfer)
-* Requires careful loss balancing
-* Increased system complexity
-
----
-
-## Future Work
-
-* Transformer-based architecture (BERT / RoBERTa)
-* Web-based dashboard (Streamlit)
-* API deployment (FastAPI)
-* Automated report generation
+```bash
+git clone https://github.com/SanyogSingh07/TriTaskNLP.git
+cd TriTaskNLP
+python -m venv .venv
+# Activate venv: Windows: .venv\Scripts\activate | Unix: source .venv/bin/activate
+pip install -r requirements.txt
+python main.py
+```
 
 ---
 
 ## License
 
-This project is licensed under the MIT License.
-
----
-
-## Author
-
-**Sanyog Kumar Singh**
-B.Tech Data Science
-
----
-
-## Final Note
-
-This project is not just about building a model — it’s about exploring how multiple dimensions of language can be understood through a shared representation. The goal is to move closer to systems that learn *language holistically*, rather than as isolated tasks.
-
----
+Distributed under the **MIT License**.
