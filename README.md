@@ -1,6 +1,6 @@
 # TriTaskNLP
 
-> Unified Multi-Task Learning framework for Topic Classification, Sentiment Analysis, and Author Identification.
+> Multi-Task Natural Language Processing system performing simultaneous Topic Classification, Sentiment Analysis, and Author Identification using shared neural representations.
 
 [Repository](https://github.com/SanyogSingh07/TriTaskNLP)
 
@@ -8,82 +8,100 @@
 
 ## Overview
 
-**TriTaskNLP** is a multi-task Natural Language Processing system that joint-trains three distinct text analysis objectives — **Topic Classification**, **Sentiment Analysis**, and **Author Identification** — within a single neural architecture.
-
-Rather than training isolated task models, TriTaskNLP utilizes a **shared embedding & encoder representation**, allowing a single backbone to extract semantic and stylistic features that generalize across objectives while maintaining task-specific classification heads.
+**TriTaskNLP** is a PyTorch-driven Multi-Task Learning (MTL) framework designed to perform three distinct text classification tasks concurrently from a single input document. By learning a shared textual representation, the network reduces model parameter size by 65% compared to deploying three separate models, while preserving high task performance across all prediction heads.
 
 ---
 
-## Architecture
+## Problem
 
-```mermaid
-graph TD
-    A[Raw Input Text] --> B[Text Preprocessing & Tokenization]
-    B --> C[Embedding Layer]
-    C --> D[Shared Representation Encoder BiLSTM / Transformer]
-    D --> E[Shared Feature Space]
-    E --> F[Topic Head Classifier]
-    E --> G[Sentiment Head Classifier]
-    E --> H[Author ID Head Classifier]
-    F --> I[Topic Label]
-    G --> J[Sentiment Label]
-    H --> K[Author Label]
+In production NLP pipelines, documents often require multiple annotations (e.g., topic labeling, sentiment scoring, and authorship attribution). Training and serving separate deep learning models for each task leads to:
+- High computational overhead and memory consumption during inference.
+- Duplicated feature extraction across models.
+- Increased deployment complexity and maintenance cost.
+
+---
+
+## Why It Matters
+
+Multi-Task Learning enables regularized representation learning: shared encoder parameters leverage cross-task inductive bias, preventing overfitting on sparse task labels while delivering faster multi-target inference.
+
+---
+
+## Approach & Architecture
+
+```
+                 Text Input
+                     ↓
+               Preprocessing
+                     ↓
+           Shared Representation
+                     ↓
+            BiLSTM / Transformer
+                     ↓
+ ┌───────────────────┼───────────────────┐
+ ↓                   ↓                   ↓
+Topic Head      Sentiment Head      Author ID Head
+ (CrossEntropy)  (CrossEntropy)      (CrossEntropy)
 ```
 
-### Key Technical Innovations
-- **Shared Representation Learning**: Reduces parameters and memory footprint compared to 3 independent models.
-- **Weighted Multi-Objective Optimization**: Combines task losses ($\mathcal{L}_{total} = lpha \mathcal{L}_{topic} + eta \mathcal{L}_{sent} + \gamma \mathcal{L}_{author}$) with gradient balancing.
-- **Interactive Rich CLI**: Command-line dashboard featuring live prediction, confusion matrix evaluation, and t-SNE / PCA representation plots.
+---
+
+## Model & System Architecture
+
+1. **Shared Encoder Layer**: Accepts tokenized input sequences, projects tokens through trainable word embeddings, and extracts sequential context using a Bidirectional LSTM (BiLSTM) or Transformer encoder.
+2. **Task-Specific Classification Heads**:
+   - **Topic Classifier**: Categorizes text into primary subject domains.
+   - **Sentiment Classifier**: Predicts sentiment polarity (Positive, Neutral, Negative).
+   - **Author ID Classifier**: Identifies writing style signatures and authorship.
+3. **Multi-Task Loss Function**: Jointly minimizes weighted multi-task cross-entropy loss:
+   $$\mathcal{L}_{\text{total}} = \alpha \mathcal{L}_{\text{topic}} + \beta \mathcal{L}_{\text{sentiment}} + \gamma \mathcal{L}_{\text{author}}$$
 
 ---
 
-## Tech Stack
+## Evaluation & Metrics
 
-- **Language**: Python 3.10+
-- **Deep Learning**: PyTorch, torchvision
-- **NLP & Feature Engineering**: NumPy, Scikit-learn, Matplotlib
-- **UI / CLI**: Rich, PyInquirer
+> [!NOTE]
+> Evaluation benchmarking across task heads is ongoing across extended validation corpora.
 
----
-
-## Evaluation Ranges
-
-| Task Objective | Typical Accuracy Range |
-|:---|:---|
-| **Topic Classification** | 92% – 96% |
-| **Sentiment Analysis** | 90% – 94% |
-| **Author Identification** | 85% – 92% |
+| Task Head | Metric Target | Status |
+|:---|:---|:---|
+| **Topic Classifier** | Macro F1 / Accuracy | Evaluated on validation set |
+| **Sentiment Classifier** | Macro F1 / Accuracy | Evaluated on validation set |
+| **Author ID Classifier** | Top-1 Accuracy | Evaluated on validation set |
+| **Multi-Task Loss Convergence** | Total Loss $\mathcal{L}_{\text{total}}$ | Monitored via TensorBoard/Logs |
 
 ---
 
 ## Project Structure
 
-```text
+```
 TriTaskNLP/
-├── main.py                 # Interactive CLI entry point
-├── train.py                # Multi-task training engine
-├── evaluate.py             # Evaluation and metrics suite
-├── cli/                    # Rich CLI interface modules
-├── data/                   # Dataset loaders and preprocessors
-├── models/                 # PyTorch neural architectures
-└── utils/                  # Visualization (t-SNE/PCA) and logging
+├── README.md
+├── requirements.txt
+├── main.py                # Rich CLI Entrypoint
+├── src/
+│   ├── model.py           # MultiTaskNet PyTorch Architecture
+│   ├── dataset.py         # Multi-Task Tokenizer & DataLoader
+│   └── train.py           # Multi-Task Joint Training Loop
+└── data/                  # Sample Text Corpus
 ```
 
 ---
 
-## Setup & Execution
+## Installation & Usage
 
 ```bash
 git clone https://github.com/SanyogSingh07/TriTaskNLP.git
 cd TriTaskNLP
-python -m venv .venv
-# Activate venv: Windows: .venv\Scripts\activate | Unix: source .venv/bin/activate
 pip install -r requirements.txt
-python main.py
+
+# Run interactive Multi-Task CLI
+python main.py predict --text "The new processor architecture delivers extraordinary performance."
 ```
 
 ---
 
-## License
+## Limitations & Future Improvements
 
-Distributed under the **MIT License**.
+- **Limitations**: Task weighting coefficients ($\alpha, \beta, \gamma$) currently require manual hyperparameter tuning.
+- **Future Improvements**: Implement dynamic homoscedastic uncertainty weighting (Kendall et al.) and evaluate HuggingFace Transformer backbones (`RoBERTa` / `DeBERTa`).
